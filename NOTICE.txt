@@ -1,0 +1,3 @@
+Swiss Ephemeris is copyright Astrodienst AG, Zurich, Switzerland. It is used here under the GNU Affero General Public License (AGPL).
+The Swiss Ephemeris copyright notices and this notice are preserved. Swiss Ephemeris Inside.
+https://www.astro.com/swisseph/

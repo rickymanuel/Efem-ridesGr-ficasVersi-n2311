@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Astrological Transit Charts</title>
+    
+    <link rel="icon" type="image/png" href="img/icon-192.png">
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d4af37">
+    
+    <!-- Conectamos el archivo CSS externo -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+
+<!-- MENÚ IZQUIERDO -->
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h3>Menu</h3>
+        <button id="closeSidebar" class="close-btn">&times;</button>
+    </div>
+    <div class="sidebar-menu">
+        <div class="sidebar-title">Base Views</div>
+        <button class="menu-item view-btn active" data-view="1anio">📈 1 Year Chart</button>
+        <button class="menu-item view-btn" data-view="6anios">📊 6 Years Chart</button>
+        
+        <div class="sidebar-divider"></div>
+        
+        <div class="sidebar-title">Plugins</div>
+        <button id="btnLoadMonthlyPlugin" class="menu-item">📅 Monthly Ephemeris</button>
+        <button class="menu-item disabled" onclick="alert('Not available in this version')">🌙 Lunar Phases</button>
+        <button id="btnLoadOrbitas" class="menu-item">🪐 Orbits</button>
+
+        <div class="sidebar-divider"></div>
+        <button id="btnAbout" class="menu-item">ℹ️ About &amp; Licenses</button>
+        <div id="pwaItem">
+            <button id="btnInstallPwa" class="menu-item" style="font-weight:800;letter-spacing:.3px">📲 INSTALAR PWA</button>
+            <div id="pwaNota" style="padding:0 16px 8px;font-size:12px;line-height:1.35;color:#aab7c4">Opcional. Agrega un acceso directo en tu pantalla de inicio para abrirla más rápido y usarla sin internet. Es gratis, ocupa muy poco y puedes quitarla cuando quieras, como cualquier otro ícono.</div>
+        </div>
+    </div>
+</div>
+
+<!-- MENÚ DERECHO -->
+<div id="settingsSidebar" class="settings-sidebar">
+    <div class="settings-header">
+        <h3>Graphic Settings</h3>
+        <button id="closeSettings" class="close-btn" style="color:#333;">&times;</button>
+    </div>
+    <div class="settings-content">
+        <div class="settings-section">
+            <h4>Chart Appearance</h4>
+            <button id="btnDarkMode" class="toggle-btn">🌙 Dark Mode</button>
+            <button id="btnInvertColors" class="toggle-btn">🔄 Invert Line Colors</button>
+        </div>
+        <div class="settings-section">
+            <h4>Line Thickness</h4>
+            <div class="range-item">
+                <input type="range" id="rangeThickness" min="1" max="8" step="0.5" value="2">
+                <span id="lblThickness" style="width: 40px; text-align: right;">2 px</span>
+            </div>
+        </div>
+        <div class="settings-section">
+            <h4>Planet Colors</h4>
+            <div id="colorPickersContainer" class="color-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="container">
+    <div class="header-top">
+        <button id="openSidebar" class="btn-icono">☰</button>
+        <div class="header-center">
+            <img src="img/mi-logo.png" alt="Logo" class="logo-titulo" onerror="this.style.display='none'">
+            <h2>Transit Charts</h2>
+        </div>
+        <button id="openSettings" class="btn-icono">⚙️</button>
+    </div>
+    
+    <div class="controls-top" id="main-controls">
+        <div>
+            <label for="anioInicio">Year:</label>
+            <select id="anioInicio"></select>
+        </div>
+        <input type="hidden" id="modoVista" value="1anio"> 
+        <button id="btnGenerar">Generate</button>
+    </div>
+
+    <div id="loading" style="display:none; text-align:center; font-weight:bold; color:#e67e22;">Calculating...</div>
+
+    <div class="chart-container" id="main-chart-container">
+        <canvas id="graficoAstral"></canvas>
+    </div>
+
+    <!-- AQUÍ VIVIRÁ EL PLUGIN -->
+    <div id="plugin-container" style="display: none; flex: 1; flex-direction: column; width: 100%;"></div>
+
+    <div class="controls-bottom" id="main-chart-controls">
+        <button class="btn-control" id="btnZoomIn" title="Zoom In">➕</button>
+        <button class="btn-control" id="btnReset" title="Reset">🔄</button>
+        <button class="btn-control" id="btnZoomOut" title="Zoom Out">➖</button>
+    </div>
+</div>
+
+<div id="aboutModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:16px">
+    <div style="background:#fff;color:#2c3e50;max-width:420px;width:100%;max-height:85vh;overflow:auto;border-radius:12px;padding:18px 18px 14px;font:14px/1.45 system-ui,sans-serif;position:relative">
+        <button id="aboutClose" style="position:absolute;right:8px;top:4px;border:0;background:none;font-size:26px;cursor:pointer;color:#555">&times;</button>
+        <h3 style="margin:0 0 8px">About &amp; Licenses</h3>
+        <p>Free educational / awareness project. No ads, no tracking, no commercial use.</p>
+        <p><b>This software is free software</b>, released under the <b>GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)</b>. You may use, study, share and modify it under those terms.</p>
+        <p id="aboutSrc"></p>
+        <p style="margin-bottom:4px"><b>Credits</b></p>
+        <ul style="margin:0 0 8px;padding-left:18px">
+            <li><a href="https://www.astro.com/swisseph/" target="_blank" rel="noopener">Swiss Ephemeris</a> &copy; Astrodienst AG (AGPL) &mdash; planetary and lunar calculations. <i>Swiss Ephemeris Inside.</i></li>
+            <li>Swiss Ephemeris WebAssembly wrapper by prolaxu (GPL-3.0-or-later).</li>
+            <li><a href="https://www.chartjs.org/" target="_blank" rel="noopener">Chart.js</a> and chartjs-plugin-zoom (MIT).</li>
+            <li>Symbols, drawings and interface by the author of this project.</li>
+        </ul>
+        <p style="font-size:12px;color:#7f8c8d;margin:0">Positions are calculated for educational purposes and come without warranty.</p>
+    </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>
